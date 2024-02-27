@@ -15,4 +15,4 @@ class ProductState(StatesGroup):
     addProductImage = State()
 
     startDeleteProduct = State()
-    finishDeleteProduct = State()
+

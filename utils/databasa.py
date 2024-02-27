@@ -64,7 +64,8 @@ class Databasa:
 
     def del_product(self, nomi):
         try:
-            self.cursor.execute(f"DELETE FROM products WHERE products=?;", (nomi,))
+            self.cursor.execute(f"DELETE FROM products WHERE product_nomi=?;", (nomi,))
+            self.conn.commit()
             return True
         except:
             return False

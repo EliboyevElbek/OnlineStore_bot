@@ -12,6 +12,7 @@ db = Databasa(DB_NAME)
 
 product_router = Router()
 
+
 @product_router.message(Command('add_product'))
 async def select_add_product(message: Message, state: FSMContext):
     await state.set_state(ProductState.addProduct)
@@ -20,8 +21,9 @@ async def select_add_product(message: Message, state: FSMContext):
         reply_markup=maxsulot_inline_edit_keyboard()
     )
 
+
 @product_router.callback_query(ProductState.addProduct)
-async def add_product(callback: CallbackQuery, state:FSMContext):
+async def add_product(callback: CallbackQuery, state: FSMContext):
     await state.set_state(ProductState.addProductName)
     await callback.message.answer("Product Nomi:")
     await callback.message.delete()
@@ -46,18 +48,41 @@ async def add_name(message: Message, state: FSMContext):
     else:
         await message.reply("Faqat rasm yuboring:")
 
+
 @product_router.message(Command('delete_product'))
-async def start_delete_product(message: Message, state:FSMContext):
+async def start_delete_product(message: Message, state: FSMContext):
     await state.set_state(ProductState.startDeleteProduct)
     await message.answer(
         text="O'chirmoqchi bo'lgan productni tanlangg",
         reply_markup=product_inline_delete_keyboard()
     )
 
+
 @product_router.callback_query(ProductState.startDeleteProduct)
 async def del_product(query: CallbackQuery, state: FSMContext):
-    await state.update_data(nomi=query.data)
-    await state.set_state() #oxiriga yetmagan
+    await state.update_data(name=query.data)
+    data = await state.get_data()
+    if db.del_product(nomi=data.get('name')):
+        await query.message.delete()
+        await query.message.answer("Maxsulot o'chirildi")
+        await state.clear()
+    else:
+        await query.message.answer("O'chirishda xatolik")
+        await state.clear()
+    # await query.message.answer("Tanlagan maxsulotingiz o'chiriladi:")
+
+
+# @product_router.callback_query(ProductState.finishDeleteProduct)
+# async def del_product(query: CallbackQuery, state=FSMContext):
+#     data = await state.get_data()
+#     if db.del_product(nomi=data.get('nomi')):
+#         await query.message.delete()
+#         await query.message.answer("Maxsulot o'chirildi")
+#         await state.clear()
+#     else:
+#         await query.message.answer("O'chirishda xatolik")
+#         await state.clear()
+
 
 @product_router.message(Command('all_product'))
 async def all_product(message: Message):
@@ -67,6 +92,3 @@ async def all_product(message: Message):
             photo=product[2],
             caption=f"<b>{product[1]}</b>"
         )
-
-
-
